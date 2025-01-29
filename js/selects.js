@@ -30,11 +30,11 @@ function get_course(val) {
     }
     });
 }
-function get_student(val) {
+function get_users(val) {
     $.ajax({
     type: "POST",
     url: "get_data.php",
-    data:'flag=user&roleid=5&courseid='+val,
+    data:'flag=user&role=student&courseid='+val,
     success: function(data){
         $("#id_student").html(data);
     }

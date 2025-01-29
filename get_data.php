@@ -28,7 +28,7 @@ require_login();
 $context = context_system::instance();
 $categoryid = optional_param('categoryid', 0, PARAM_INT);
 $flag = optional_param('flag', 0, PARAM_TEXT);
-$roleid = optional_param('roleid', 0, PARAM_INT);
+$role = optional_param('role', 0, PARAM_TEXT);
 $courseid = optional_param('courseid', 0, PARAM_INT);
 
 switch ($flag) {
@@ -59,8 +59,8 @@ switch ($flag) {
         if ($courseid == 0) {
             echo "";
             die();
-        }
-        $data = helper::get_user($courseid, $roleid);
+        }       
+        $data = helper::get_user($courseid, $role);
         foreach ($data as $key => $value) {
             echo "<option value='$key'>$value</option>";
         }
