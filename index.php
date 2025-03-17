@@ -66,12 +66,13 @@ switch ($action) {
         $report =  report_studentsession_get_lastaccess($data);
         $reportexcel = report_excel($report);
         $excel['excel'] = $reportexcel;
-         echo $OUTPUT->render_from_template('report_studentsession/donwload_report', $excel);
+        echo $OUTPUT->render_from_template('report_studentsession/donwload_report', $excel);
         break;
     case REPORT_STUDENTSESSION_ACTION_QUICK_FILTER:
-        // var_dump( $form->get_data());
+        
         $form = report_studentsession_filter_form_action(null, [], true);
         if($data = $form->get_data());{
+
             $SESSION->quick_filter = $data;
             $report =  report_studentsession_get_lastaccess($data);
             $report['excel'] = 'excel';

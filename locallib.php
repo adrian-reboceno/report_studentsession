@@ -57,7 +57,8 @@ function report_studentsession_filter_form_action($filterid = null, $data = [], 
 
 function report_studentsession_get_lastaccess($filter){
     global $DB, $USER;    
-   
+
+    $params = [];
     $plugin = 'report_studentsession';
     $columns = [
         get_string('id',  $plugin),
@@ -84,8 +85,6 @@ function report_studentsession_get_lastaccess($filter){
         $where= "(cats.path LIKE '%/{$period}%' OR cats.path LIKE '%/{$period}' )";
     }
     if(!empty($filter->program)){           
-       // $params['category'] = (int)$filter->program ;
-        //$params['parent'] = (int)$filter->program;
         $programa= (int)$filter->program;
         $where= "(cats.path LIKE '%/{$programa}%' OR cats.path LIKE '%/{$programa}' )";
     }
@@ -106,15 +105,15 @@ function report_studentsession_get_lastaccess($filter){
     if(!empty($filter->activity)){      
         switch ($filter->activity) {
             case 1:
-                $whereacces =  "timeaccess BETWEEN DATEDIFF(SECOND, '1970-01-01', GETDATE() - 3) AND DATEDIFF(SECOND, '1970-01-01', GETDATE() - 0)";
+                $whereacces =  "timeaccess BETWEEN UNIX_TIMESTAMP(NOW() - INTERVAL 3 SECOND) AND UNIX_TIMESTAMP((NOW())";
                 $join = "JOIN {user_lastaccess} AS last ON last.userid = u.id AND last.courseid = c.id ";
                 break;
             case 2:
-                $whereacces =  "timeaccess BETWEEN DATEDIFF(SECOND, '1970-01-01', GETDATE() - 6) AND DATEDIFF(SECOND, '1970-01-01', GETDATE() - 3)";
+                $whereacces =  "timeaccess BETWEEN UNIX_TIMESTAMP(NOW() - INTERVAL - 6 SECOND) AND UNIX_TIMESTAMP(NOW() - INTERVAL 3 SECOND)";
                 $join = "JOIN {user_lastaccess} AS last ON last.userid = u.id AND last.courseid = c.id ";
                 break;
             case 3:
-                $whereacces = "timeaccess < DATEDIFF(SECOND, '1970-01-01', GETDATE() - 7)";
+                $whereacces = "timeaccess < UNIX_TIMESTAMP(NOW() - INTERVAL 7 SECOND)";
                 $join = '';
                 break;
             default:
@@ -154,13 +153,14 @@ function report_studentsession_get_lastaccess($filter){
         WHERE userid=u.id AND courseid=c.id  
         {$whereacces}        
         ) AS timeaccess, 
-        (SELECT TOP 1 CONCAT(p.firstname, ' ', p.lastname, '-', p.email)
+        (SELECT  CONCAT(p.firstname, ' ', p.lastname, '-', p.email)
             FROM {course} AS cp 
             LEFT JOIN {context} AS ctxp ON cp.id = ctxp.instanceid
             JOIN {role_assignments} AS lrap ON lrap.contextid = ctxp.id
             JOIN {user} AS p ON lrap.userid = p.id
             WHERE cp.id = c.id 
             AND lrap.roleid = 3
+            LIMIT 1
         ) AS teacher
         FROM {course} AS c  
         LEFT JOIN {context} AS ctx ON c.id = ctx.instanceid
@@ -173,6 +173,7 @@ function report_studentsession_get_lastaccess($filter){
         AND lra.roleid = 5 
         {$where}	
         GROUP BY u.id, u.firstname, u.lastname, u.email, c.id, c.fullname, c.shortname, cats.name, c.startdate, c.enddate, u.lastaccess";
+
 
     $data = $DB->get_records_sql($sql, $params);
 
